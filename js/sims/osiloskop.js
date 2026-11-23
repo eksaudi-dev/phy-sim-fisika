@@ -3,7 +3,7 @@
    Kontrol: Vmax (10–310 V), f (10–100 Hz), beda fase φ, Play/Pause. */
 
 import { simFrame, darkScreen, greenGrid, setReadouts, slider, playBtn, label, makeLoop } from "./frame.js";
-import { num } from "../utils.js";
+import { num, $ } from "../utils.js";
 
 export function mount(host) {
   const frame = simFrame(host, {

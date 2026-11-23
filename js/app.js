@@ -805,6 +805,11 @@ function resetLevelQuiz() {
 /* ============================================================
    BOOT
    ============================================================ */
+function netDot(online) {
+  const dot = $("#net-dot");
+  if (dot) dot.classList.toggle("off", !online);
+}
+
 function boot() {
   initLogin();
   wireModal();
