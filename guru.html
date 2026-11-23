@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHY-SIM · Dashboard Pantauan Guru</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script type="module" src="js/guru.js"></script>
+  <style>
+    .gate-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .gate-card { width: min(420px, 92vw); border: 3px solid var(--cyan); box-shadow: 10px 10px 0 rgba(0,229,255,0.3); background: #101014; padding: 30px; }
+  </style>
+</head>
+<body class="guru">
+
+  <!-- ============ GERBANG PIN ============ -->
+  <section class="gate-wrap" id="gate">
+    <div class="gate-card">
+      <span class="panel-label">TERMINAL GURU — AKSES TERPROTEKSI</span>
+      <h1 style="font-size:30px;color:#fff;margin:10px 0 4px">PHY·SIM <span style="color:var(--cyan)">GURU</span></h1>
+      <p class="mono" style="font-size:11px;color:#7fd;margin-bottom:18px">DASHBOARD PANTAUAN &amp; KONTROL SESI</p>
+      <form id="pin-form" autocomplete="off">
+        <label class="field-label" style="color:#7fd" for="pin-input">PIN Guru</label>
+        <input class="input" id="pin-input" type="password" inputmode="numeric" maxlength="12" placeholder="••••••" required>
+        <p class="mono" id="pin-err" style="color:var(--red);font-size:12px;min-height:18px;margin-top:6px"></p>
+        <button type="submit" class="btn" style="width:100%;margin-top:6px">Buka Dashboard ⟶</button>
+      </form>
+      <p class="mono" style="font-size:10px;color:#446;margin-top:16px">PIN default: 123456 — ganti lewat panel ⚙ setelah masuk.</p>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div class="hidden" id="dash">
+    <header class="topbar">
+      <span class="logo" style="cursor:default">PHY<em>·</em>SIM<small>TEACHER CONSOLE</small></span>
+      <div class="topbar-user">
+        <span class="mono" id="live-ind" style="color:var(--green)">● MENYAMBUNGKAN…</span>
+        <button class="btn btn-sm" id="btn-pin">⚙ Ganti PIN</button>
+        <button class="btn btn-sm" id="btn-logout">Keluar</button>
+      </div>
+    </header>
+
+    <main style="padding:88px 20px 60px" class="container">
+      <span class="kicker" style="color:#7fd">Pemantauan Pembelajaran Real-Time</span>
+      <h1 class="page-title"><span class="hollow">DASHBOARD</span> GURU.</h1>
+
+      <!-- Statistik kelas -->
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="st-jml">0</div><div class="stat-k">Jumlah Siswa Aktif</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-ac">—</div><div class="stat-k">Rata-rata Nilai Asesmen AC</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-gem">—</div><div class="stat-k">Rata-rata Nilai Asesmen GEM</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-pt">—</div><div class="stat-k">Rata-rata Post-Test</div></div>
+      </div>
+
+      <!-- Sakelar sesi -->
+      <div class="panel mt-4" style="border-color:var(--cyan)">
+        <span class="panel-label">Sakelar Kontrol Sesi Live (berlaku instan untuk semua siswa)</span>
+        <div class="switch-row">
+          <span class="sw-name">Asesmen Arus Bolak-Balik</span>
+          <span class="sw-desc">hasil_kuis ← aktif_ac : true|false</span>
+          <label class="switch"><input type="checkbox" data-switch="aktif_ac"><span class="track"></span></label>
+          <span class="sw-state" data-state="aktif_ac"></span>
+        </div>
+        <div class="switch-row">
+          <span class="sw-name">Asesmen Gelombang Elektromagnetik</span>
+          <span class="sw-desc">pengaturan/sesi_evaluasi ← aktif_gem</span>
+          <label class="switch"><input type="checkbox" data-switch="aktif_gem"><span class="track"></span></label>
+          <span class="sw-state" data-state="aktif_gem"></span>
+        </div>
+        <div class="switch-row">
+          <span class="sw-name">Post-Test Komprehensif</span>
+          <span class="sw-desc">aktif_posttest — evaluasi sumatif 1×</span>
+          <label class="switch"><input type="checkbox" data-switch="aktif_posttest"><span class="track"></span></label>
+          <span class="sw-state" data-state="aktif_posttest"></span>
+        </div>
+      </div>
+
+      <!-- Tabel rekap -->
+      <div class="mt-4">
+        <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span class="panel-label" style="margin:0">Tabel Rekap Multi-Topik (onSnapshot Real-Time)</span>
+          <button class="btn btn-sm btn-green" id="btn-csv">⬇ Export Rekap ke Excel (.CSV)</button>
+        </div>
+        <div class="filter-row">
+          <div>
+            <label class="field-label" style="color:#7fd">Filter Kelas</label>
+            <select class="input" id="f-kelas"><option value="all">Semua Kelas</option></select>
+          </div>
+          <div>
+            <label class="field-label" style="color:#7fd">Status Ketuntasan</label>
+            <select class="input" id="f-status">
+              <option value="all">Semua Status</option>
+              <option value="selesai">Post-Test Selesai</option>
+              <option value="terbuka">Post-Test Terbuka (Belum Dikerjakan)</option>
+              <option value="belum">Belum Lulus Level-2 Kedua Materi</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:220px">
+            <label class="field-label" style="color:#7fd">Cari Nama Siswa</label>
+            <input class="input" id="f-nama" type="text" placeholder="mis. Nazwa…">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="brutal">
+            <thead><tr>
+              <th>No</th><th>Nama Lengkap</th><th>Kelas</th><th>Absen</th>
+              <th colspan="3">Skor AC (Lvl 1/2/3)</th>
+              <th colspan="3">Skor GEM (Lvl 1/2/3)</th>
+              <th>Post-Test</th><th>Pindah Tab</th>
+              <th>Catatan Refleksi (AC/GEM)</th><th>Waktu Pembaruan</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal konfirmasi -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" style="background:#101014;border-color:var(--cyan)">
+      <h3 class="modal-title" style="color:#fff">Konfirmasi</h3>
+      <div class="modal-body mat" style="color:#ddd"></div>
+      <div class="flex mt-2" style="justify-content:flex-end">
+        <button class="btn modal-close">Batal</button>
+        <button class="btn modal-ok" style="background:var(--cyan);color:var(--ink);border-color:var(--cyan)">Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
