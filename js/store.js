@@ -39,9 +39,23 @@ function stamp() {
   return new Date().toLocaleString("id-ID", { hour12: false });
 }
 
+/* Firestore tanpa konfigurasi valid bisa menggantung tanpa batas (retry backoff SDK).
+   Semua operasi cloud diberi batas waktu supaya UI tidak pernah terkunci. */
+const CLOUD_TIMEOUT = 6000;
+
+function withTimeout(promise, ms = CLOUD_TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("cloud-timeout")), ms);
+    promise.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); }
+    );
+  });
+}
+
 async function pushToFirestore(docId, patch) {
   const payload = { ...patch, waktuUpdate: stamp() };
-  await setDoc(doc(db, "hasil_kuis", docId), payload, { merge: true });
+  await withTimeout(setDoc(doc(db, "hasil_kuis", docId), payload, { merge: true }));
 }
 
 export async function saveProgress(patch) {
@@ -97,7 +111,7 @@ export function initOfflineBridge(onChange) {
 /* ---------------- Muat progres dari Firestore (recovery lintas perangkat) ---------------- */
 export async function fetchFirestoreProgress(docId) {
   try {
-    const snap = await getDoc(doc(db, "hasil_kuis", docId));
+    const snap = await withTimeout(getDoc(doc(db, "hasil_kuis", docId)));
     return snap.exists() ? snap.data() : null;
   } catch {
     return null;
